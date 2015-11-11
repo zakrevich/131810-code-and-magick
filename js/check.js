@@ -1,8 +1,10 @@
-function getMessage(a:boolean, b:string=):string {
-  return b
+function getMessage(a, b) {
+  if 
 }
+var a
+var b
 
-var a = true 
+
 if (a)
  {
   return "Я попал в [b]"
