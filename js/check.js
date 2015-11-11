@@ -1,6 +1,7 @@
-getMessage(a:*, b:*=):string
+function getMessage(a:boolean, b:*=):string
 
-if a=boolean 
+var a = true 
+if (a)
  {
   return "Я попал в [b]"
 }
