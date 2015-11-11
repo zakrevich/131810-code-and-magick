@@ -1,4 +1,6 @@
-function getMessage(a:boolean, b:*=):string
+function getMessage(a:boolean, b:string=):string {
+  return b
+}
 
 var a = true 
 if (a)
