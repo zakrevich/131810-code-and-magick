@@ -1,5 +1,5 @@
 function getMessage(a, b) {
-  if 
+
 }
 var a
 var b
