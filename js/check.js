@@ -1,25 +1,25 @@
 function getMessage(a,b) {
 
 }
-// var a
-// var b
+var a
+var b
 
 
-// if (a)
-// {
-//   return "Я попал в [b]"
-// }
+if (a)
+{
+  return "Я попал в [b]"
+}
 
-// else if a=number
-// {
-//   return "Я прыгнул на [a] * 100 сантиметров"
-// }
-// else if a=array {
-// return "Я прошел [sum] шагов"
-// }
-// else if a=array || b=array {
-//   return "Я прошел [length] метров"
-// }
-// else {
-//   return "Я никуда не попал"
-// }
+else if typeof a=== "number"
+{
+  return "Я прыгнул на [a] * 100 сантиметров"
+}
+else if a=array {
+return "Я прошел [sum] шагов"
+}
+else if a=array || b=array {
+  return "Я прошел [length] метров"
+}
+else {
+  return "Я никуда не попал"
+}
