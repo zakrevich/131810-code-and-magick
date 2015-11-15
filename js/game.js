@@ -382,6 +382,7 @@
       var fontSize = 16;
       var wrappedText;
       var lineHeight = fontSize + 2;
+
       switch (this.state.currentStatus) {
         case Verdict.WIN:
           wrappedText = this._wrapText(this.ctx, 'Мне не хочется этого говорить, но меня заставляют. Ты выйграл. Неудачник.', 170, 30, rectWidth - 10, fontSize, lineHeight);
@@ -401,6 +402,7 @@
           break;
       }
     },
+
     /**
      * Функция отрисовки окна.
      */
@@ -409,14 +411,17 @@
       ctx.moveTo(startX, startY);
       var horLinesCount = widthR / step;
       var verLinesCount = height / step;
+
+
       // рисуем низ
-      console.log(horLinesCount);
       if (horLinesCount % 2 !== 0) {
         horLinesCount += 1;
       }
       var xNow = startX;
       var yNow = startY;
+
       for (var i = 0; i < horLinesCount; i++) {
+
         if (i % 2 === 0) {
           yNow = startY + step;
         } else {
@@ -425,12 +430,16 @@
         xNow += step;
         ctx.lineTo(xNow, yNow);
       }
+
       // рисуем правую сторону
       verLinesCount = height / step;
+
       if (verLinesCount % 2 === 0) {
         verLinesCount += 1;
       }
+
       for (i = 0; i < verLinesCount; i++) {
+
         if (i % 2 === 0) {
           xNow -= step;
         } else {
@@ -439,9 +448,12 @@
         yNow -= step;
         ctx.lineTo(xNow, yNow);
       }
+
       // рисуем верх
       horLinesCount = (widthR / step) - 1;
+
       for (i = 0; i < horLinesCount; i++) {
+
         if (i % 2 === 0) {
           yNow += step;
         } else {
@@ -450,9 +462,12 @@
         xNow -= step;
         ctx.lineTo(xNow, yNow);
       }
+
       // рисуем левую сторону
       verLinesCount = (height / step) - 1;
+
       for (i = 0; i < verLinesCount; i++) {
+
         if (i % 2 === 0) {
           xNow += step;
         } else {
@@ -465,10 +480,14 @@
       ctx.closePath();
       ctx.fill();
     },
-      // считает высоту
+
+    /**
+     * Функция расчета высоты.
+     */
     _drawMessage: function(text, lineHeight, rectWidth) {
       var messHeight = text.length * lineHeight;
       var step = 5;
+
       if (messHeight % step !== 0) {
         var leftover = messHeight % step;
         messHeight = messHeight - leftover + step;
@@ -477,23 +496,32 @@
       this._drawRect(this.ctx, 150, 180, '#FFFFFF', rectWidth, messHeight + 15, step);
       this._drawMess(text, 170, 170, lineHeight);
     },
-      // пишет текст
+
+    /**
+     * Функция написания текста.
+     */
     _drawText: function(text, x, y, lineHeight) {
       this.ctx.fillStyle = 'black';
+
       for (var i = text.length - 1; i >= 0; i--) {
         this.ctx.fillText(text[i], x, y - lineHeight * (text.length - i - 1));
       }
     },
-      // переносим текст по строчкам
+
+    /**
+     * Функция переноса текста по строчкам.
+     */
     _wrapText: function(context, text, marginLeft, marginTop, maxWidth, fontSize, lineHeight) {
       this.ctx.font = fontSize + 'px PT Mono';
       var words = text.split('');
       var countWords = words.length;
       var line = '';
       var lines = [];
+
       for (var i = 0; i < countWords; i++) {
         var testLine = line + words[i] + ' ';
         var testWidth = context.measureText(testLine).width;
+
         if (testWidth > maxWidth) {
           lines.push(line);
           line = words[i] + ' ';
