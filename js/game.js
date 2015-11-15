@@ -378,20 +378,132 @@
      * Отрисовка экрана паузы.
      */
     _drawPauseScreen: function() {
+      var rectWidth = 360;
+      var fontSize = 16;
+      var wrappedText;
+      var lineHeight = fontSize + 2;
       switch (this.state.currentStatus) {
         case Verdict.WIN:
-          console.log('you have won!');
+          wrappedText = this._wrapText(this.ctx, 'Мне не хочется этого говорить, но меня заставляют. Ты выйграл. Неудачник.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.FAIL:
-          console.log('you have failed!');
+          wrappedText = this._wrapText(this.ctx, 'Ты проиграл! АХАХАХАХА.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.PAUSE:
-          console.log('game is on pause!');
+          wrappedText = this._wrapText(this.ctx, 'Наконец-то ты отстал от меня и поставил игру на паузу, ленивый геймер.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.INTRO:
-          console.log('welcome to the game! Press Space to start');
+          wrappedText = this._wrapText(this.ctx, 'Я-Шпендальф социопат. Пробел - старт, шифт - пиф-паф.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
           break;
       }
+    },
+    /**
+     * Функция отрисовки окна.
+     */
+    _drawRect: function(ctx, startX, startY, color, widthR, height, step) {
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      var horLinesCount = widthR / step;
+      var verLinesCount = height / step;
+      // рисуем низ
+      console.log(horLinesCount);
+      if (horLinesCount % 2 !== 0) {
+        horLinesCount += 1;
+      }
+      var xNow = startX;
+      var yNow = startY;
+      for (var i = 0; i < horLinesCount; i++) {
+        if (i % 2 === 0) {
+          yNow = startY + step;
+        } else {
+          yNow = startY;
+        }
+        xNow += step;
+        ctx.lineTo(xNow, yNow);
+      }
+      // рисуем правую сторону
+      verLinesCount = height / step;
+      if (verLinesCount % 2 === 0) {
+        verLinesCount += 1;
+      }
+      for (i = 0; i < verLinesCount; i++) {
+        if (i % 2 === 0) {
+          xNow -= step;
+        } else {
+          xNow += step;
+        }
+        yNow -= step;
+        ctx.lineTo(xNow, yNow);
+      }
+      // рисуем верх
+      horLinesCount = (widthR / step) - 1;
+      for (i = 0; i < horLinesCount; i++) {
+        if (i % 2 === 0) {
+          yNow += step;
+        } else {
+          yNow -= step;
+        }
+        xNow -= step;
+        ctx.lineTo(xNow, yNow);
+      }
+      // рисуем левую сторону
+      verLinesCount = (height / step) - 1;
+      for (i = 0; i < verLinesCount; i++) {
+        if (i % 2 === 0) {
+          xNow += step;
+        } else {
+          xNow -= step;
+        }
+        yNow += step;
+        ctx.lineTo(xNow, yNow);
+      }
+      ctx.fillStyle = color;
+      ctx.closePath();
+      ctx.fill();
+    },
+      // считает высоту
+    _drawMessage: function(text, lineHeight, rectWidth) {
+      var messHeight = text.length * lineHeight;
+      var step = 5;
+      if (messHeight % step !== 0) {
+        var leftover = messHeight % step;
+        messHeight = messHeight - leftover + step;
+      }
+      this._drawRect(this.ctx, 160, 190, 'rgba(0, 0, 0, 0.7)', rectWidth, messHeight + 15, step);
+      this._drawRect(this.ctx, 150, 180, '#FFFFFF', rectWidth, messHeight + 15, step);
+      this._drawMess(text, 170, 170, lineHeight);
+    },
+      // пишет текст
+    _drawText: function(text, x, y, lineHeight) {
+      this.ctx.fillStyle = 'black';
+      for (var i = text.length - 1; i >= 0; i--) {
+        this.ctx.fillText(text[i], x, y - lineHeight * (text.length - i - 1));
+      }
+    },
+      // переносим текст по строчкам
+    _wrapText: function(context, text, marginLeft, marginTop, maxWidth, fontSize, lineHeight) {
+      this.ctx.font = fontSize + 'px PT Mono';
+      var words = text.split('');
+      var countWords = words.length;
+      var line = '';
+      var lines = [];
+      for (var i = 0; i < countWords; i++) {
+        var testLine = line + words[i] + ' ';
+        var testWidth = context.measureText(testLine).width;
+        if (testWidth > maxWidth) {
+          lines.push(line);
+          line = words[i] + ' ';
+          marginTop += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      return lines;
     },
 
     /**
