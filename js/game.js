@@ -386,19 +386,19 @@
       switch (this.state.currentStatus) {
         case Verdict.WIN:
           wrappedText = this._wrapText(this.ctx, 'Мне не хочется этого говорить, но меня заставляют. Ты выйграл. Неудачник.', 170, 30, rectWidth - 10, fontSize, lineHeight);
-          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.FAIL:
           wrappedText = this._wrapText(this.ctx, 'Ты проиграл! АХАХАХАХА.', 170, 30, rectWidth - 10, fontSize, lineHeight);
-          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.PAUSE:
           wrappedText = this._wrapText(this.ctx, 'Наконец-то ты отстал от меня и поставил игру на паузу, ленивый геймер.', 170, 30, rectWidth - 10, fontSize, lineHeight);
-          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.INTRO:
           wrappedText = this._wrapText(this.ctx, 'Я-Шпендальф социопат. Пробел - старт, шифт - пиф-паф.', 170, 30, rectWidth - 10, fontSize, lineHeight);
-          this._paintMeAllSlave(wrappedText, lineHeight, rectWidth);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
       }
     },
@@ -494,7 +494,7 @@
       }
       this._drawRect(this.ctx, 160, 190, 'rgba(0, 0, 0, 0.7)', rectWidth, messHeight + 15, step);
       this._drawRect(this.ctx, 150, 180, '#FFFFFF', rectWidth, messHeight + 15, step);
-      this._drawMess(text, 170, 170, lineHeight);
+      this._drawText(text, 170, 170, lineHeight);
     },
 
     /**
@@ -513,7 +513,7 @@
      */
     _wrapText: function(context, text, marginLeft, marginTop, maxWidth, fontSize, lineHeight) {
       this.ctx.font = fontSize + 'px PT Mono';
-      var words = text.split('');
+      var words = text.split(' ');
       var countWords = words.length;
       var line = '';
       var lines = [];
