@@ -385,19 +385,19 @@
 
       switch (this.state.currentStatus) {
         case Verdict.WIN:
-          wrappedText = this._wrapText(this.ctx, 'Мне не хочется этого говорить, но меня заставляют. Ты выйграл. Неудачник.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          wrappedText = this._wrapText(this.ctx, 'Мне не хочется этого говорить, но меня заставляют. Ты выйграл. Неудачник.', rectWidth - 10, fontSize, lineHeight);
           this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.FAIL:
-          wrappedText = this._wrapText(this.ctx, 'Ты проиграл! АХАХАХАХА.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          wrappedText = this._wrapText(this.ctx, 'Ты проиграл! АХАХАХАХА.', rectWidth - 10, fontSize, lineHeight);
           this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.PAUSE:
-          wrappedText = this._wrapText(this.ctx, 'Наконец-то ты отстал от меня и поставил игру на паузу, ленивый геймер.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          wrappedText = this._wrapText(this.ctx, 'Наконец-то ты отстал от меня и поставил игру на паузу, ленивый геймер.', rectWidth - 10, fontSize, lineHeight);
           this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.INTRO:
-          wrappedText = this._wrapText(this.ctx, 'Я-Шпендальф социопат. Пробел - старт, шифт - пиф-паф.', 170, 30, rectWidth - 10, fontSize, lineHeight);
+          wrappedText = this._wrapText(this.ctx, 'Я-Шпендальф социопат. Пробел - старт, шифт - пиф-паф.', rectWidth - 10, fontSize, lineHeight);
           this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
       }
@@ -406,12 +406,11 @@
     /**
      * Функция отрисовки окна.
      */
-    _drawRect: function(ctx, startX, startY, color, widthR, height, step) {
+    _drawRect: function(ctx, color, widthR, height, step, startX, startY) {
       ctx.beginPath();
       ctx.moveTo(startX, startY);
       var horLinesCount = widthR / step;
       var verLinesCount = height / step;
-
 
       // рисуем низ
       if (horLinesCount % 2 !== 0) {
@@ -421,7 +420,6 @@
       var yNow = startY;
 
       for (var i = 0; i < horLinesCount; i++) {
-
         if (i % 2 === 0) {
           yNow = startY + step;
         } else {
@@ -439,7 +437,6 @@
       }
 
       for (i = 0; i < verLinesCount; i++) {
-
         if (i % 2 === 0) {
           xNow -= step;
         } else {
@@ -453,7 +450,6 @@
       horLinesCount = (widthR / step) - 1;
 
       for (i = 0; i < horLinesCount; i++) {
-
         if (i % 2 === 0) {
           yNow += step;
         } else {
@@ -467,7 +463,6 @@
       verLinesCount = (height / step) - 1;
 
       for (i = 0; i < verLinesCount; i++) {
-
         if (i % 2 === 0) {
           xNow += step;
         } else {
@@ -485,16 +480,50 @@
      * Функция расчета высоты.
      */
     _drawMessage: function(text, lineHeight, rectWidth) {
-      var messHeight = text.length * lineHeight;
+      var messHeight = text.lines.length * lineHeight;
       var step = 5;
 
       if (messHeight % step !== 0) {
         var leftover = messHeight % step;
         messHeight = messHeight - leftover + step;
       }
-      this._drawRect(this.ctx, 160, 190, 'rgba(0, 0, 0, 0.7)', rectWidth, messHeight + 15, step);
-      this._drawRect(this.ctx, 150, 180, '#FFFFFF', rectWidth, messHeight + 15, step);
-      this._drawText(text, 170, 170, lineHeight);
+
+      var me = this._getMe();
+      var startX, startY;
+      var GAP = 15;
+
+      if (me !== 0) {
+        startX = me.x + me.width;
+        startY = me.y;
+
+        if (WIDTH - startX < rectWidth && startY < messHeight + GAP) {
+          startX = me.x - rectWidth;
+          if (startX <= 0) {
+            startX = 0;
+          }
+          startY = messHeight + step + GAP;
+        } else if (WIDTH - startX < rectWidth && startY > messHeight + GAP) {
+          startX = me.x - rectWidth;
+
+          if (startX <= 0) {
+            startX = 0;
+          }
+          startY = me.y;
+        } else if (WIDTH - startX > rectWidth && startY > messHeight + GAP) {
+          startX = me.x + me.width;
+          startY = me.y;
+        } else if (WIDTH - startX > rectWidth && startY < messHeight + GAP) {
+          startX = me.x + me.width;
+          startY = messHeight + step + GAP;
+        }
+      }
+
+      var moveHeight = ((messHeight + GAP - messHeight) / 2) + step;
+      var moveWidth = (rectWidth - (text.maxWidth - (2 * step))) / 2;
+
+      this._drawRect(this.ctx, 'rgba(0, 0, 0, 0.7)', rectWidth, messHeight + GAP, step, startX + 10, startY + 10);
+      this._drawRect(this.ctx, '#FFFFFF', rectWidth, messHeight + GAP, step, startX, startY);
+      this._drawText(text.lines, startX + moveWidth, startY - moveHeight, lineHeight);
     },
 
     /**
@@ -511,27 +540,34 @@
     /**
      * Функция переноса текста по строчкам.
      */
-    _wrapText: function(context, text, marginLeft, marginTop, maxWidth, fontSize, lineHeight) {
+    _wrapText: function(context, text, textWidth, fontSize, lineHeight) {
       this.ctx.font = fontSize + 'px PT Mono';
       var words = text.split(' ');
       var countWords = words.length;
       var line = '';
       var lines = [];
+      var maxLineWidth = 0;
+      var marginTop = 0;
 
       for (var i = 0; i < countWords; i++) {
         var testLine = line + words[i] + ' ';
         var testWidth = context.measureText(testLine).width;
 
-        if (testWidth > maxWidth) {
+        if (testWidth > textWidth) {
           lines.push(line);
           line = words[i] + ' ';
           marginTop += lineHeight;
         } else {
           line = testLine;
         }
+        maxLineWidth = Math.max(maxLineWidth, context.measureText(line).width);
       }
       lines.push(line);
-      return lines;
+
+      return {
+        lines: lines,
+        maxWidth: maxLineWidth
+      };
     },
 
     /**
@@ -573,6 +609,12 @@
       }
     },
 
+    _getMe: function() {
+      return this.state.objects.filter(function(object) {
+        return object.type === ObjectType.ME;
+      })[0];
+    },
+
     /**
      * Обновление статуса объектов на экране. Добавляет объекты, которые должны
      * появиться, выполняет проверку поведения всех объектов и удаляет те, которые
@@ -581,9 +623,7 @@
      */
     updateObjects: function(delta) {
       // Персонаж.
-      var me = this.state.objects.filter(function(object) {
-        return object.type === ObjectType.ME;
-      })[0];
+      var me = this._getMe();
 
       // Добавляет на карту файрбол по нажатию на Shift.
       if (this.state.keysPressed.SHIFT) {
