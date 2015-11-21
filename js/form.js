@@ -17,23 +17,21 @@
   name.required = true;
 
   function checkName() {
-    if (name.value === '') {
-      fieldsName.classList.remove('invisible');
-      return false;
-    } else if (name.value !== '') {
-      fieldsName.classList.add('invisible');
-      return true;
-    }
+    var nameIsNotEmpty = (name.value !== '');
+    fieldsName.classList.toggle('invisible', nameIsNotEmpty);
+    return nameIsNotEmpty;
   }
 
   function checkStarsText() {
-    if (stars.value < 3 && reviewText.value === '') {
-      reviewText.required = true;
-      fieldText.classList.remove('invisible');
-      return false;
-    } else if (stars.value < 3 && reviewText.value !== '') {
-      fieldText.classList.add('invisible');
-      return true;
+    if (stars.value < 3) {
+      if (reviewText.value === '') {
+        reviewText.required = true;
+        fieldText.classList.remove('invisible');
+        return false;
+      } else {
+        fieldText.classList.add('invisible');
+        return true;
+      }
     } else {
       fieldText.classList.add('invisible');
       reviewText.required = false;
@@ -43,43 +41,30 @@
 
   function removeAll() {
     var starsAndText = checkStarsText();
-    var namename = checkName();
+    var checkNameFunction = checkName();
 
-    if (starsAndText === true && namename === true) {
-      for (var i = 0; i < formControls.length; i++) {
+    for (var i = 0; i < formControls.length; i++) {
+      if (starsAndText && checkNameFunction) {
         formControls[i].classList.add('invisible');
-      }
-    } else if (starsAndText !== true || namename !== true) {
-      for (i = 0; i < formControls.length; i++) {
+      } else if (starsAndText !== true || checkNameFunction !== true) {
         formControls[i].classList.remove('invisible');
       }
     }
   }
 
   name.onchange = function() {
-    checkName();
-    checkStarsText();
     removeAll();
   };
 
   reviewText.onchange = function() {
-    checkName();
-    checkStarsText();
     removeAll();
   };
 
   for (var i = 0; i < stars.length; i++) {
     stars[i].onchange = function() {
-      checkName();
-      checkStarsText();
       removeAll();
     };
   }
-
-
-  formElement.onsubmit = function(evt) {
-    evt.formElement.submit();
-  };
 
   formOpenButton.onclick = function(evt) {
     evt.preventDefault();
