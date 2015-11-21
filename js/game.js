@@ -378,20 +378,196 @@
      * Отрисовка экрана паузы.
      */
     _drawPauseScreen: function() {
+      var rectWidth = 360;
+      var fontSize = 16;
+      var wrappedText;
+      var lineHeight = fontSize + 2;
+
       switch (this.state.currentStatus) {
         case Verdict.WIN:
-          console.log('you have won!');
+          wrappedText = this._wrapText(this.ctx, 'Мне не хочется этого говорить, но меня заставляют. Ты выйграл. Неудачник.', rectWidth - 10, fontSize, lineHeight);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.FAIL:
-          console.log('you have failed!');
+          wrappedText = this._wrapText(this.ctx, 'Ты проиграл! АХАХАХАХА.', rectWidth - 10, fontSize, lineHeight);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.PAUSE:
-          console.log('game is on pause!');
+          wrappedText = this._wrapText(this.ctx, 'Наконец-то ты отстал от меня и поставил игру на паузу, ленивый геймер.', rectWidth - 10, fontSize, lineHeight);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
         case Verdict.INTRO:
-          console.log('welcome to the game! Press Space to start');
+          wrappedText = this._wrapText(this.ctx, 'Я-Шпендальф социопат. Пробел - старт, шифт - пиф-паф.', rectWidth - 10, fontSize, lineHeight);
+          this._drawMessage(wrappedText, lineHeight, rectWidth);
           break;
       }
+    },
+
+    /**
+     * Функция отрисовки окна.
+     */
+    _drawRect: function(ctx, color, widthR, height, step, startX, startY) {
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      var horLinesCount = widthR / step;
+      var verLinesCount = height / step;
+
+      // рисуем низ
+      if (horLinesCount % 2 !== 0) {
+        horLinesCount += 1;
+      }
+      var xNow = startX;
+      var yNow = startY;
+
+      for (var i = 0; i < horLinesCount; i++) {
+        if (i % 2 === 0) {
+          yNow = startY + step;
+        } else {
+          yNow = startY;
+        }
+        xNow += step;
+        ctx.lineTo(xNow, yNow);
+      }
+
+      // рисуем правую сторону
+      verLinesCount = height / step;
+
+      if (verLinesCount % 2 === 0) {
+        verLinesCount += 1;
+      }
+
+      for (i = 0; i < verLinesCount; i++) {
+        if (i % 2 === 0) {
+          xNow -= step;
+        } else {
+          xNow += step;
+        }
+        yNow -= step;
+        ctx.lineTo(xNow, yNow);
+      }
+
+      // рисуем верх
+      horLinesCount = (widthR / step) - 1;
+
+      for (i = 0; i < horLinesCount; i++) {
+        if (i % 2 === 0) {
+          yNow += step;
+        } else {
+          yNow -= step;
+        }
+        xNow -= step;
+        ctx.lineTo(xNow, yNow);
+      }
+
+      // рисуем левую сторону
+      verLinesCount = (height / step) - 1;
+
+      for (i = 0; i < verLinesCount; i++) {
+        if (i % 2 === 0) {
+          xNow += step;
+        } else {
+          xNow -= step;
+        }
+        yNow += step;
+        ctx.lineTo(xNow, yNow);
+      }
+      ctx.fillStyle = color;
+      ctx.closePath();
+      ctx.fill();
+    },
+
+    /**
+     * Функция расчета высоты.
+     */
+    _drawMessage: function(text, lineHeight, rectWidth) {
+      var messHeight = text.lines.length * lineHeight;
+      var step = 5;
+
+      if (messHeight % step !== 0) {
+        var leftover = messHeight % step;
+        messHeight = messHeight - leftover + step;
+      }
+
+      var me = this._getMe();
+      var startX, startY;
+      var GAP = 15;
+
+      if (me !== 0) {
+        startX = me.x + me.width;
+        startY = me.y;
+
+        if (WIDTH - startX < rectWidth && startY < messHeight + GAP) {
+          startX = me.x - rectWidth;
+          if (startX <= 0) {
+            startX = 0;
+          }
+          startY = messHeight + step + GAP;
+        } else if (WIDTH - startX < rectWidth && startY > messHeight + GAP) {
+          startX = me.x - rectWidth;
+
+          if (startX <= 0) {
+            startX = 0;
+          }
+          startY = me.y;
+        } else if (WIDTH - startX > rectWidth && startY > messHeight + GAP) {
+          startX = me.x + me.width;
+          startY = me.y;
+        } else if (WIDTH - startX > rectWidth && startY < messHeight + GAP) {
+          startX = me.x + me.width;
+          startY = messHeight + step + GAP;
+        }
+      }
+
+      var moveHeight = ((messHeight + GAP - messHeight) / 2) + step;
+      var moveWidth = (rectWidth - (text.maxWidth - (2 * step))) / 2;
+
+      this._drawRect(this.ctx, 'rgba(0, 0, 0, 0.7)', rectWidth, messHeight + GAP, step, startX + 10, startY + 10);
+      this._drawRect(this.ctx, '#FFFFFF', rectWidth, messHeight + GAP, step, startX, startY);
+      this._drawText(text.lines, startX + moveWidth, startY - moveHeight, lineHeight);
+    },
+
+    /**
+     * Функция написания текста.
+     */
+    _drawText: function(text, x, y, lineHeight) {
+      this.ctx.fillStyle = 'black';
+
+      for (var i = text.length - 1; i >= 0; i--) {
+        this.ctx.fillText(text[i], x, y - lineHeight * (text.length - i - 1));
+      }
+    },
+
+    /**
+     * Функция переноса текста по строчкам.
+     */
+    _wrapText: function(context, text, textWidth, fontSize, lineHeight) {
+      this.ctx.font = fontSize + 'px PT Mono';
+      var words = text.split(' ');
+      var countWords = words.length;
+      var line = '';
+      var lines = [];
+      var maxLineWidth = 0;
+      var marginTop = 0;
+
+      for (var i = 0; i < countWords; i++) {
+        var testLine = line + words[i] + ' ';
+        var testWidth = context.measureText(testLine).width;
+
+        if (testWidth > textWidth) {
+          lines.push(line);
+          line = words[i] + ' ';
+          marginTop += lineHeight;
+        } else {
+          line = testLine;
+        }
+        maxLineWidth = Math.max(maxLineWidth, context.measureText(line).width);
+      }
+      lines.push(line);
+
+      return {
+        lines: lines,
+        maxWidth: maxLineWidth
+      };
     },
 
     /**
@@ -433,6 +609,12 @@
       }
     },
 
+    _getMe: function() {
+      return this.state.objects.filter(function(object) {
+        return object.type === ObjectType.ME;
+      })[0];
+    },
+
     /**
      * Обновление статуса объектов на экране. Добавляет объекты, которые должны
      * появиться, выполняет проверку поведения всех объектов и удаляет те, которые
@@ -441,9 +623,7 @@
      */
     updateObjects: function(delta) {
       // Персонаж.
-      var me = this.state.objects.filter(function(object) {
-        return object.type === ObjectType.ME;
-      })[0];
+      var me = this._getMe();
 
       // Добавляет на карту файрбол по нажатию на Shift.
       if (this.state.keysPressed.SHIFT) {
