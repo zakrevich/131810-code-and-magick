@@ -57,4 +57,5 @@
 
     return element;
   }
+  document.querySelector('.reviews-filter').classList.remove('invisible');
 })();
